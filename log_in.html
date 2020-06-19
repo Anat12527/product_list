@@ -1,0 +1,54 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block body %}
+
+<br>
+<br>
+<br>
+<div class="card">
+    <div class="card-header">
+        <center>welcome</center>
+    </div>
+    <div class="card-body">
+        <div class="container">
+            <div class="col-sm-offset-3 col-sm-6">
+                {%with messages_log=get_flashed_messages() %}
+                {%if messages_log%}
+                {% for message in messages_log %}
+                {{message}}
+                {%endfor%}
+                {%endif%}
+                {%endwith%}
+
+
+                <form action="" class="form-group mb-2" method="post" role="form">
+
+                    <dl>
+                        {{ form.hidden_tag() }}
+
+
+                        {{ wtf.form_field(form.name, class='form-control col-md-3')}}
+                        <br>
+                        {%if error_m and form.name %}
+                        <small class="form-text text-muted" id="nameHelp"> {{error_m[1]}}</small>
+                        {%endif%}
+
+                        <br>
+                        {{ wtf.form_field(form.password, class='form-control col-md-3') }}
+                        <small class="form-text text-muted" id="nameHelp"> {{error_m[0]}}</small>
+                        <br>
+                        <input class="btn btn-primary" type="submit" value="Login">
+                    </dl>
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

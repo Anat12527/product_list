@@ -1,0 +1,412 @@
+{% extends 'basic4.html'%}
+
+{%block body%}
+<script>
+   function validateForm() {
+        var productForm = document.forms["addProd"];
+        if (productForm["product_name"].value === "") {
+           alert("Name must be filled out");
+            return false;
+        } else if (productForm["amount"].value === "") {
+            alert("Amount must be filled out");
+            return false;
+        }
+        return true;
+    }
+
+
+</script>
+
+<div id="outer">
+    <p id="lout">
+        <a href="{{url_for('logout')}}"> log out </a>
+    </p>
+
+
+    <svg height="50" viewBox="0 0 24 24" width="50" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+        <path d="M0 0h24v24H0z" fill="none"/>
+    </svg>
+    <p class="text-primary-center">
+    <h3>Product managment List</p></h3>
+
+    <br>
+
+    {%if find_name %}
+    <b><a href="/">
+        <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            <path d="M0 0h24v24H0z" fill="none"/>
+        </svg>
+        <font color="black"> Back to List</font></a></b>
+
+    <br>
+    <br>
+    {%endif%}
+
+    {% if logged_user %}
+    <h6> Hello {{logged_user}} !!</h6>
+    {%endif%}
+
+    <button class="btn btn-info btn-sm" data-target="#ModalLoginForm" data-toggle="modal" type="button">
+        Add a new product
+    </button>
+
+    <button class="btn btn-info btn-sm " data-target="#ModalfindForm" data-toggle="modal" type="button">
+        Find a product
+    </button>
+    <a href="/index_recipes"
+    <button class="btn btn-info btn-sm "> Add recipes</button>
+    </a>
+
+    <button class="btn btn-info btn-sm " data-target="#del_all_Modal" data-toggle="modal" type="button">
+        delete all
+    </button>
+
+    <a href="/export_list/{{today_d}}"
+    <button class="btn btn-info btn-sm "> export list</button>
+    </a>
+
+
+    <button class="btn btn-info btn-sm" data-target="#Modalimport_list" data-toggle="modal" type="button">
+        import list
+    </button>
+
+    <button class="btn btn-info btn-sm" data-target="#Modalinsert_date" data-toggle="modal" type="button">
+        date buy
+    </button>
+
+    <button class="btn btn-info btn-sm" data-target="#ModaladdDepartment" data-toggle="modal" type="button">
+        Add departments
+    </button>
+
+    <a href="/index_users"
+    <button class="btn btn-info btn-sm "> Manage Users</button>
+    </a>
+
+    {% for mess in get_flashed_messages() %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <button aria-label="Close" class="close" data-dismiss="alert" type="button">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <strong>{{mess}}</strong>
+    </div>
+
+    {%endfor%}
+</div>
+
+<div id="product_table">
+    <table class="table table-bordered table-hover table-sm -responsive">
+
+        <thead>
+
+        <tr>
+            {%for key_dep_name in dict_products_by_department if find_dept==key_dep_name or find_dept is none%}
+
+            <th style="width: 10%">{{key_dep_name}}</th>
+
+
+        </tr>
+
+        <tr>
+
+
+            <th style="width:10%">{{list_column_names[1]}}</th>
+
+
+            <th style="width: 10%">{{list_column_names[3]}}</th>
+
+
+            <th style="width: 10%">{{list_column_names[4]}}</th>
+
+
+            <th style="width: 10%">{{list_column_names[5]}}</th>
+
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+        <tr>
+
+            {%for product_details in dict_products_by_department[key_dep_name]if find_name is none or
+            find_name==product_details.product_name %}
+
+            <td>{{product_details.product_name}}</td>
+
+            <td>{{product_details.product_amount}}</td>
+
+            <td>{{product_details.product_notes}}</td>
+
+            <td>{{product_details.date_buy}}</td>
+
+            <td>
+                <a href="/add_sub/{{product_details.product_id}}/Add">
+                    <button class="btn btn-primary btn-sm ">
+                        <svg class="bi bi-plus" fill="currentColor" height="1em" viewBox="0 0 16 16" width="1em"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path clip-rule="evenodd"
+                                  d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H4a.5.5 0 010-1h3.5V4a.5.5 0 01.5-.5z"
+                                  fill-rule="evenodd"/>
+                            <path clip-rule="evenodd" d="M7.5 8a.5.5 0 01.5-.5h4a.5.5 0 010 1H8.5V12a.5.5 0 01-1 0V8z"
+                                  fill-rule="evenodd"/>
+                        </svg>
+                    </button>
+                </a>
+                <a href="/add_sub/{{product_details.product_id}}/Subtruct">
+                    <button class="btn btn-primary btn-sm ">
+                        <svg class="bi bi-dash" fill="currentColor" height="1em" viewBox="0 0 16 16" width="1em"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path clip-rule="evenodd" d="M3.5 8a.5.5 0 01.5-.5h8a.5.5 0 010 1H4a.5.5 0 01-.5-.5z"
+                                  fill-rule="evenodd"/>
+                        </svg>
+                    </button>
+                </a>
+                <a href="/del_product/{{product_details.product_id}}">
+                    <button class="btn btn-primary btn-sm ">
+                        <svg class="bi bi-trash" fill="currentColor" height="1em" viewBox="0 0 16 16" width="1em"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5.5 5.5A.5.5 0 016 6v6a.5.5 0 01-1 0V6a.5.5 0 01.5-.5zm2.5 0a.5.5 0 01.5.5v6a.5.5 0 01-1 0V6a.5.5 0 01.5-.5zm3 .5a.5.5 0 00-1 0v6a.5.5 0 001 0V6z"/>
+                            <path clip-rule="evenodd"
+                                  d="M14.5 3a1 1 0 01-1 1H13v9a2 2 0 01-2 2H5a2 2 0 01-2-2V4h-.5a1 1 0 01-1-1V2a1 1 0 011-1H6a1 1 0 011-1h2a1 1 0 011 1h3.5a1 1 0 011 1v1zM4.118 4L4 4.059V13a1 1 0 001 1h6a1 1 0 001-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"
+                                  fill-rule="evenodd"/>
+                        </svg>
+                    </button>
+                </a>
+            </td>
+        </tr>
+
+
+        </tbody>
+        {%endfor%}
+        {%endfor%}
+    </table>
+</div>
+<script>
+window.onscroll = function() {myFunction()};
+
+var open = document.getElementById("outer");
+var sticky = open.offsetTop;
+
+function myFunction() {
+
+  if (window.pageYOffset > sticky) {
+    open.classList.add("sticky");
+  } else {
+    open.classList.remove("sticky");
+  }
+}
+
+
+</script>
+
+<div class="modal fade" id="ModalLoginForm">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Add a product</h6>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{url_for('add_product')}}" method="POST" name="addProd" onsubmit="return validateForm()"
+                      role="form">
+                    <input name="_token" type="hidden" value="">
+                    <div class="form-group has-error">
+                        <label class="control-label">Product Name</label>
+                        <div>
+                            <input class="form-control form-control-sm" name="product_name" type="text" value="">
+                        </div>
+                    </div>
+                    <div class="form-group has-error">
+                        <label class="control-label">Department</label>
+                        <div>
+                            <select class="form-control form-control-sm" name="department_select">
+                                {% for key_id in dict_departments %}
+                                <option value="{{ dict_departments[key_id] }}">{{ dict_departments[key_id]}}</option>
+                                {%endfor%}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group has-error">
+                        <label class="control-label">Amount</label>
+                        <div>
+                            <input class="form-control form-control-sm" name="amount" required type="number">
+                        </div>
+                    </div>
+                    <div class="form-group has-error">
+                        <label class="control-label">Notes</label>
+                        <div>
+                            <input class="form-control" name="notes" required type="text">
+                        </div>
+                    </div>
+
+                    <div class="form-group has-error">
+                        <div>
+                            <button class="btn btn-success form-control-sm" type="submit">Add</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<!-- Modal ModalfindForm-->
+
+
+<div class="modal fade" id="ModalfindForm">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Find a product</h6>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{url_for('find_product')}}" method="POST" role="form">
+                    <input name="_token" type="hidden" value="">
+                    <div class="form-group">
+                        <label class="control-label">Product Name to find</label>
+                        <div>
+                            <input class="form-control form-control-sm" name="product_name" type="text" value="">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div>
+                            <button class="btn btn-success form-control-sm" type="submit">Find</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<!-- Modal del_all_Modal-->
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="del_all_Modal" role="dialog"
+     tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Delet All</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete all products?
+            </div>
+            <div class="modal-footer">
+                <a href="/dell_all"
+                <button class="btn btn-info btn-sm " type="button"> Dell All</button>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modalimport_list_Modal-->
+
+<div class="modal fade" id="Modalimport_list">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Import List</h6>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{url_for('import_list')}}" method="POST" role="form">
+                    <input name="_token" type="hidden" value="">
+                    <div class="form-group">
+                        <label class="control-label">List name</label>
+                        <div>
+                            <select class="form-control form-control-sm" name="sheet_select">
+                                {%for key_name in dict_sheet_names%}
+                                <option value="{{dict_sheet_names[key_name]}}">{{dict_sheet_names[key_name]}}</option>
+                                {%endfor%}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div>
+                            <button class="btn btn-success form-control-sm" type="submit">import</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<!-- Modal insert_date-->
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="Modalinsert_date" role="dialog"
+     tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Insert date to buy</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to insert date to buy?
+            </div>
+            <div class="modal-footer">
+                <a href="/date_buy"
+                <button class="btn btn-info btn-sm " type="button">Insert date</button>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal addDepartment-->
+
+<div class="modal fade" id="ModaladdDepartment">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Add a Department</h6>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{url_for('add_departments')}}" method="POST" role="form">
+                    <input name="_token" type="hidden" value="">
+                    <div class="form-group has-error">
+                        <label class="control-label">Department Name</label>
+                        <div>
+                            <input class="form-control form-control-sm" name="department_name" type="text" value="">
+                        </div>
+                    </div>
+                    <div class="form-group has-error">
+                        <div>
+                            <button class="btn btn-success form-control-sm" type="submit">Add</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+{%endblock%}
+

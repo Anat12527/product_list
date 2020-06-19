@@ -1,0 +1,57 @@
+{% extends 'basic4.html'%}
+{% block body %}
+
+<a href="/"
+<button class="btn btn-primary btn-sm ">
+    Back
+</button>
+</a>
+
+<br>
+<table class="table table-bordered table-hover table-sm table-responsive">
+    <thead>
+
+
+    {% for key_recp_name, product_values in dict_products_by_recipe.items() %}
+
+    <th style="width: 5%">{{key_recp_name}}</th>
+    <th style="width: 5%"><a href="/add_recipe_to_list/{{key_recp_name}}"
+        <button class="btn btn-primary btn-sm">
+            add recipe<br>
+            to list
+        </button>
+        </a>
+    </th>
+
+
+    <tr>
+        <th style="width: 5%">{{list_column_names[1]}}</th>
+        <th style="width: 5%">Department</th>
+        <th style="width: 5%">{{list_column_names[3]}}</th>
+        <th style="width: 5%">{{list_column_names[4]}}</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    <tr>
+        {%for value in product_values%}
+        <td>{{value[0]}}</td>
+
+        <td>{{value[2]}}</td>
+        >
+
+        <td>{{value[3]}}</td>
+
+        <td>{{value[4]}}</td>
+
+
+    </tr>
+
+    </tbody>
+    {%endfor%}
+    {%endfor%}
+</table>
+
+
+{% endblock %}

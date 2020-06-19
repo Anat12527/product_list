@@ -1,0 +1,98 @@
+{% extends 'basic4.html'%}
+{% block body %}
+
+
+<a href="/"
+<button class="btn btn-primary btn-sm ">
+    Back
+</button>
+</a>
+<br>
+<br>
+<h6> Hello {{logged_user}}</h6>
+
+<button class="btn btn-info btn-sm" data-target="#ModalAddUserForm" data-toggle="modal" type="button">
+    Add a new user
+</button>
+
+
+{% with errors = get_flashed_messages(category_filter=["warning"]) %}
+{% if errors %}
+{%- for message in errors %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <span>{{ message }}</span>
+    <button aria-label="Close" class="close" data-dismiss="alert" type="button">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endfor -%}
+{% endif %}
+{% endwith %}
+<table class="table table-bordered table-hover table-sm table-responsive">
+    <thead>
+    <tr>
+        <th style="width: 5%">{{list_colum_names_users[1]}}</th>
+        <th style="width: 5%">{{list_colum_names_users[2]}}</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    <tr>
+        {%for user in all_users%}
+
+        <td>{{user.user_name}}</td>
+
+        <td>{{user.password}}</td>
+
+        <td><a class="btn btn-primary btn-sm" href="/del_user/{{user.id_user}}">
+            delete
+        </a>
+
+    </tr>
+
+    </tbody>
+    {%endfor%}
+
+</table>
+
+<div class="modal fade" id="ModalAddUserForm">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Add a user</h6>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="\add_users" method="POST" role="form">
+                    <input name="_token" type="hidden" value="">
+                    <div class="form-group has-error">
+                        <label class="control-label">User Name</label>
+                        <div>
+                            <input class="form-control form-control-sm" id="check_name" name="user_name" type="text"
+                                   value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group has-error">
+                        <label class="control-label">Password</label>
+                        <div>
+                            <input class="form-control form-control-sm" name="password" type="text">
+                        </div>
+                    </div>
+                    <div class="form-group has-error">
+                        <div>
+                            <button class="btn btn-success form-control-sm" type="submit">Add</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+{%endblock%}
