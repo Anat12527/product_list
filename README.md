@@ -1,2 +1,2 @@
 # Groceries Shopping List
-![Image](The main list screen.png)
+![Image](The main list screen.jpg)
