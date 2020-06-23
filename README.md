@@ -15,6 +15,9 @@ To have this app running on your local computer: Create and activate a virtual e
 Install the dependencies:
 Create database 'home_products_manager'
 
+```
+create_home_products_database.py
+```
 
 # Technologies
 Backend: Python, Flask, MySQL, SQLAlchemy
