@@ -10,3 +10,12 @@ Another feature is updating the groceries list according to a recipe(entered a h
 # Prerequisites
 
 Install MySQL Workbench 8.0
+
+To have this app running on your local computer: Create and activate a virtual environment.
+Install the dependencies:
+Create database 'home_products_manager'
+
+
+# Technologies
+Backend: Python, Flask, MySQL, SQLAlchemy
+Frontend: JavaScript,  Jinja2, HTML5, CSS, Bootstrap
