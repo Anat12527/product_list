@@ -21,4 +21,4 @@ create_home_products_database.py
 
 # Technologies
 Backend: Python, Flask, MySQL, SQLAlchemy
-Frontend: JavaScript,  Jinja2, HTML5, CSS, Bootstrap
+Frontend: JavaScript,  Jinja2, HTML5, CSS, Bootstrap.
