@@ -24,7 +24,11 @@ Install the dependencies:
 ```
 pip install -r requirements.txt
 ```
+Run the app:
 
+```
+python ex_4.py
+```
 
 # Technologies
 Backend: Python, Flask, MySQL, SQLAlchemy
