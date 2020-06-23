@@ -24,6 +24,8 @@ Install the dependencies:
 ```
 pip install -r requirements.txt
 ```
+save the product_lists.xlsx under the app directory.
+
 Run the app:
 
 ```
