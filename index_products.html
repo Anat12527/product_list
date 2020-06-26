@@ -2,6 +2,14 @@
 
 {%block body%}
 <script>
+$( "#FocusME" )[0].scrollIntoView();
+</script>
+
+
+
+
+
+<script>
    function validateForm() {
         var productForm = document.forms["addProd"];
         if (productForm["product_name"].value === "") {
@@ -55,7 +63,7 @@
     <button class="btn btn-info btn-sm " data-target="#ModalfindForm" data-toggle="modal" type="button">
         Find a product
     </button>
-    <a href="/index_recipes"
+    <a href="/show_new_recipes"
     <button class="btn btn-info btn-sm "> Add recipes</button>
     </a>
 
@@ -96,7 +104,7 @@
 </div>
 
 <div id="product_table">
-    <table class="table table-bordered table-hover table-sm -responsive">
+    <table class="table table-bordered table-hover table-sm -responsive" >
 
         <thead>
 
@@ -129,7 +137,7 @@
 
         <tbody>
 
-        <tr>
+        <tr id="FocusME">
 
             {%for product_details in dict_products_by_department[key_dep_name]if find_name is none or
             find_name==product_details.product_name %}
@@ -144,7 +152,7 @@
 
             <td>
                 <a href="/add_sub/{{product_details.product_id}}/Add">
-                    <button class="btn btn-primary btn-sm ">
+                    <button class="btn btn-primary btn-sm " onclick="stayFunction()">
                         <svg class="bi bi-plus" fill="currentColor" height="1em" viewBox="0 0 16 16" width="1em"
                              xmlns="http://www.w3.org/2000/svg">
                             <path clip-rule="evenodd"
@@ -184,6 +192,7 @@
         {%endfor%}
     </table>
 </div>
+
 <script>
 window.onscroll = function() {myFunction()};
 
