@@ -1,6 +1,6 @@
 import string
 from datetime import date, datetime, timedelta
-
+import re
 import openpyxl
 import pandas as pd
 from e4_form import Logging
@@ -9,7 +9,8 @@ from flask_bootstrap import Bootstrap
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from openpyxl.styles import Font
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine,desc
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:newrootpassword@localhost/home_products_management'
@@ -17,24 +18,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey4'
 app.config['REMEMBER_COOKIE_DURATION'] = timedelta(minutes=10)
 login_manager = LoginManager(app)
-login_manager.login_view = 'log'
+login_manager.login_view = 'log' #the user returns to this view function.
 login_manager.login_message = 'You must login in order to access the app '
 db = SQLAlchemy(app)
 app.debug = True
 Bootstrap(app)
-RECIPES = dict()
 
-RECIPES = {"lasagna": [["lasagna pasta", '5', "Baking Goods", '1', "one package"],
-                       ["tomato paste", '4', 'Canned', '5', "5 small packages"],
-                       ["hard cheese", '1', 'Dairy', '100', "100 gram"]],
-           "schnitzel": [["eggs", '1', 'Dairy', '1', "one package"],
-                         ["bread crumbs", '5', "Baking Goods", '1', "one package"],
-                         ["chicken breast", '2', 'Meat', '1', "one kilo"]],
-           "meatballs": [["eggs", '1', 'Dairy', '1', "one package"],
-                         ["bread crumbs", '5', "Baking Goods", '1', "one package"],
-                         ["beef", '2', 'Meat', '1', "one kilo"]]
-
-           }
 
 
 ###  Models  ###
@@ -87,7 +76,7 @@ class Products(db.Model):
     product_amount = db.Column('Product_amount', db.Integer, nullable=False)
     product_notes = db.Column('Product_Notes', db.String(50), nullable=False)
     date_buy = db.Column('Date_Buy', db.DATE, default=date.today(), nullable=False)
-    deps = db.relationship('Departments', backref='prod')
+    deps = db.relationship('Departments', backref='prod')#could have benn used in the index_product to directly approach the departments name: product_details.deps.departmet_name
 
     """ 
             The constructor for Products class. 
@@ -107,6 +96,36 @@ class Products(db.Model):
         self.product_amount = product_amount
         self.product_notes = product_notes
         self.date_buy = date_buy
+
+
+class Recipes(db.Model):
+     __tablename__ = 'recipes'
+     recipe_id = db.Column('Id_Recipe', db.Integer, primary_key=True)
+     recipe_name = db.Column('Recipe_Name', db.String(50), nullable=False)
+
+     def __init__(self, recipe_name, recipe_id):
+       self.recipe_id = recipe_id
+       self.recipe_name = recipe_name
+
+
+class ProdForRecipe(db.Model):
+     __tablename__ = 'prodforrecipe'
+     product_id = db.Column('Id_Product', db.Integer, primary_key=True)
+     product_name = db.Column('Product_Name', db.String(50), nullable=False)
+     department_id_rec = db.Column('Id_Department_rec', db.Integer, db.ForeignKey('departments.Id_Department'))
+     product_amount = db.Column('Product_amount', db.Integer, nullable=False)
+     product_notes = db.Column('Product_Notes', db.String(50), nullable=False)
+     recipe_id = db.Column('Id_Recipe', db.Integer, db.ForeignKey('recipes.Id_Recipe'))
+     deps2 = db.relationship('Departments', backref='prod2')
+     rec_name = db.relationship('Recipes', backref='prod_rec')
+
+     def __init__(self, product_name, department_id_rec, product_amount, product_notes,recipe_id):
+         self. department_id_rec =  department_id_rec
+         self.product_name = product_name
+         self.product_amount = product_amount
+         self.product_notes = product_notes
+         self.recipe_id = recipe_id
+
 
 
 class Users(db.Model, UserMixin):
@@ -143,7 +162,7 @@ class Users(db.Model, UserMixin):
     """
 
     def get_id(self):
-        """Returns id_user parameter,used because class usermixin refers to id."""
+        """Returns id_user parameter,used because class usermixin refers to id.(returns the id of the table)."""
         return (self.id_user)
 
 
@@ -217,7 +236,7 @@ def log():
         user = QueriesMyDb(Users, user_name_entered, Users.user_name)
         user1 = user.query_filter_name()
         if user1:
-            login_user(user1, remember=True)
+            login_user(user1, remember=True)#remember is true in order to remember the user after the session expires.
             if user_name_password == user1.password:
                 return redirect(url_for('col_names_dict_names_to_session'))
             else:
@@ -256,11 +275,17 @@ def col_names_dict_names_to_session():
           """
 
     dict_departments = {r.department_id: r.department_name for r in Departments.query.all()}
-    session['dict_departments'] = dict_departments
+    session['dict_departments'] = dict_departments #insering to a temporary variable.
     list_column_names = Products.__table__.columns.keys()
     session['list_column_names'] = list_column_names
     list_colum_names_users = Users.__table__.columns.keys()
     session['list_colum_names_users'] = list_colum_names_users
+    list_column_names_prod_recipes = ProdForRecipe.__table__.columns.keys()
+    session['list_column_names_prod_recipes'] = list_column_names_prod_recipes
+    dict_recipes = {rec.recipe_id:rec.recipe_name for rec in Recipes.query.all()}
+    session['dict_recipes'] = dict_recipes
+    list_column_names_recipes = Recipes.__table__.columns.keys()
+    session['list_column_names_recipes'] = list_column_names_recipes
     return redirect(url_for('show_products'))
 
 
@@ -274,7 +299,7 @@ def insert_date_today():
      """
     now = datetime.now()
     today_string = now.strftime('%d-%m-%Y')
-    return {'today_d': today_string}
+    return {'today_d': today_string}#a const variable that is used for the export view.
 
 
 @app.context_processor  # returns the sheets names.puts names in a dictionary and the outcome dictionary in another dict.
@@ -489,7 +514,7 @@ def add_departments():
     if request.method == "POST":
         try:
             department_name_entered = request.form.get("department_name")
-            assert department_name_entered.isalpha()
+            assert re.match(r'[A-Za-z ]+$', department_name_entered)!=None
         except AssertionError:
             flash(f'The department {department_name_entered} you entered must be letters only, try again.')
             return redirect(url_for('show_products'))
@@ -590,10 +615,10 @@ def find_product():
         find_product = Q1.query_filter_name()
         if find_product:
             for num_department in dict_departments:
-                if num_department == str(find_product.department_id):
+                if num_department == str(find_product.department_id):#if department number equals the find product,department.
                     find_dept = dict_departments[num_department]
                     dict_products_by_department = inserts_products_to_dict(num_department, dict_departments,
-                                                                           dict_products_by_department)
+                                                                           dict_products_by_department)#finds product tha belong to department of find prod.
 
             return render_template('index_products.html', list_column_names=list_column_names,
                                    dict_products_by_department=dict_products_by_department
@@ -604,44 +629,6 @@ def find_product():
             return redirect(url_for('show_products'))
 
 
-@app.route('/index_recipes', methods=['POST', 'GET'])
-@login_required
-def show_all_recipe():
-    """
-                      Shows all the recipes and their products.
-                      Returns:
-                      Returns: render_template to the page that shows all recipes.
-     """
-    list_column_names = session['list_column_names']
-    return render_template('index_recipes.html', dict_products_by_recipe=RECIPES, list_column_names=list_column_names)
-
-
-@app.route('/add_recipe_to_list/<recipe_name>', methods=['POST', 'GET'])  # adds products of recipe choosen to list.
-@login_required
-def add_recipe_to_list(recipe_name):
-    """
-                          Add a chosen recipe to the list.If products exist in the list  a compatible message appears.
-                          Returns:
-                          redirect: col_names_dict_names_to_session url .
-    """
-    prod_found = ""
-    if request.method == 'GET':
-        for record_product in range(len(RECIPES[recipe_name])):
-            query_product = QueriesMyDb(Products, RECIPES[recipe_name][record_product][0], Products.product_name)
-            if query_product.query_filter_name():
-                prod_found += (RECIPES[recipe_name][record_product][
-                                   0] + " ,")  # if it exists than get a message into variable prod_found
-
-            else:
-                products_from_recipe = Products(RECIPES[recipe_name][record_product][0],
-                                                RECIPES[recipe_name][record_product][1],
-                                                RECIPES[recipe_name][record_product][3],
-                                                RECIPES[recipe_name][record_product][4], None)
-                db.session.add(products_from_recipe)
-                db.session.commit()
-        if prod_found:
-            flash(f'The products: {prod_found} exists and were not added to the list !!! ')
-    return redirect(url_for('col_names_dict_names_to_session'))
 
 
 @app.route('/export_list/<date>', methods=['POST', 'GET'])
@@ -665,11 +652,11 @@ def export_list(date):
         list_column_names = session['list_column_names']
         dict_departments = session['dict_departments']
         recievef = openpyxl.load_workbook('product_lists.xlsx')
-        g_sheets_f = recievef.sheetnames
+        g_sheets_f = recievef.sheetnames #get the  sheet names that were in the beginning.
         num_sheets_start = len(g_sheets_f)
         recievef.create_sheet('list' + date)
         g_sheets = recievef.sheetnames
-        sheet_n = recievef.get_sheet_by_name(g_sheets[-1])
+        sheet_n = recievef.get_sheet_by_name(g_sheets[-1])#get the last sheet name to update it.
         sheet_n.cell(row=1, column=1).value = " Shopping  list"
         for num_department in dict_departments:
             dict_products_by_department = inserts_products_to_dict(num_department, dict_departments,
@@ -682,10 +669,10 @@ def export_list(date):
             for index, column_name in enumerate(
                     list_column_names):  # writing  the column names to excel file.runs every department roumd in first for loop.
                 sheet_n.cell(row=row, column=index + 1).value = list_column_names[index]
-                colum_letter = string.ascii_uppercase[index]
-                sheet_n[colum_letter + str(row)].font = Font(bold=True)
+                colum_letter = string.ascii_uppercase[index]#get the capital for the index at the loop.
+                sheet_n[colum_letter + str(row)].font = Font(bold=True)# bold the titles of the detail product.
             for value_product in dict_products_by_department[
-                key_dep_name]:  # takes the valu_product_object and writing the product details to excel file.
+                key_dep_name]:  # takes the value_product_object and writing the product details to excel file.
                 row += 1
                 for colum_number in range(1, len(list_column_names) + 1):
                     sheet_n.cell(row=row, column=colum_number).value = getattr(value_product, list_column_atrb[
@@ -746,10 +733,10 @@ def import_list():
             excel_file = 'C:/Users/anatei/PycharmProjects/HelloWorld/FLASK_APP/product_lists.xlsx'
             product_sheet = pd.read_excel(excel_file, sheet_name=sheet_name_entered, index_col=0, header=None,
                                           names=names)
-            product_sheet_s = product_sheet.sort_values(by=['Product_Name'], ascending=False)
-            len_excel_titeles = (len(product_sheet_s.loc['Id_Product'])) * 2 + 1
+            product_sheet_s = product_sheet.sort_values(by=['Product_Name'], ascending=False)#sort by the column.gives all titles under the database.
+            len_excel_titeles = (len(product_sheet_s.loc['Id_Product'])) * 2 + 1# get all lines which contain Id_Product.muls by two in order to calc the dept title as well. and add the sheet main title.
             product_sheet_s.iloc[:-len_excel_titeles].to_sql(con=engine, name="products", if_exists='append',
-                                                             index=True)
+                                                             index=True)#from the start get the data till you reach all the titles.
             return redirect(url_for('show_products'))
         return redirect(url_for('show_products'))
 
@@ -767,3 +754,151 @@ def date_buy():
         data.date_buy = date.today()
         db.session.commit()
     return redirect(url_for('col_names_dict_names_to_session'))
+
+
+@app.route('/show_new_recipes',methods=['POST','GET'])
+@login_required
+def show_new_recipes():
+    """
+                          Shows all the recipes and their products.
+                          Returns:
+                          Returns: render_template to the page that shows all recipes.
+    """
+    if request.method =='GET':
+       list_column_names_prod_recipes = session['list_column_names_prod_recipes']
+       dict_departments = session['dict_departments']
+       all_recipes = db.session.query(Recipes).join(ProdForRecipe, ProdForRecipe.recipe_id == Recipes.recipe_id).all()
+       all_products_for_recipes = ProdForRecipe.query.all()
+       dict_recipes = {rec.recipe_id: rec.recipe_name for rec in Recipes.query.all()}
+       return render_template('show_recipes.html',all_recipes=all_recipes,all_products_for_recipes= all_products_for_recipes,list_column_names_prod_recipes=list_column_names_prod_recipes,dict_departments=dict_departments,dict_recipes=dict_recipes)
+    return redirect(url_for('col_names_dict_names_to_session'))
+
+
+@app.route('/add_new_recipe_to_list/<recipe_id>', methods=['POST', 'GET'])  # adds products of recipe chosen to list.
+@login_required
+def add_new_recipe_to_list(recipe_id):
+    prod_found = ""
+    if request.method=='GET':
+       all_products_recipe = ProdForRecipe.query.filter_by(recipe_id=recipe_id).all()
+       for product in all_products_recipe:
+
+           query_product = QueriesMyDb(Products,product.product_name, Products.product_name)
+           if query_product.query_filter_name():
+              print(product.product_name)
+              prod_found += (product.product_name + " ,")  # if it exists than get a message into variable prod_found
+              print(prod_found)
+           else:
+             products_from_recipe = Products(product.product_name,product.department_id_rec,product.product_amount,product.product_notes,None)
+             db.session.add(products_from_recipe)
+             db.session.commit()
+       if prod_found:
+           flash(f'The products: {prod_found} exists and were not added to the list !!! ')
+       return redirect(url_for('col_names_dict_names_to_session'))
+
+    return redirect(url_for('col_names_dict_names_to_session'))
+
+
+@app.route('/add_new_prod_recipe/get_detail', methods=['POST', 'GET'])  # adds products of recipe chosen to list.
+@login_required
+def get_details_product_recipe():
+       product_name_entered = request.form.get('product_name')
+       department_name_entered = request.form.get('department_select')  # user selects department name
+       dict_departments = session['dict_departments']
+       for key_id in dict_departments:  # translating department name chosen to department id.
+            if department_name_entered == dict_departments[key_id]:  # if finds the name of department in dict.get its number.
+                department_id_entered = key_id
+       amount_entered = request.form.get('amount')
+       notes_entered = request.form.get('notes')
+       recipe_entered = request.form.get('recipe_select')
+       record_recipe = Recipes.query.filter_by(recipe_name = recipe_entered).first()
+       num_rec_id  = record_recipe.recipe_id
+       return product_name_entered, department_id_entered, amount_entered,notes_entered,recipe_entered,num_rec_id
+
+
+
+@app.route('/add_new_prod_recipe', methods=['POST', 'GET'])  # adds products of recipe chosen to list.
+@login_required
+def add_new_prod_recipe():
+    if request.method == 'POST':
+       product_name_entered, department_id_entered, amount_entered, notes_entered, recipe_entered,num_rec_id = get_details_product_recipe()
+       if product_name_entered.isnumeric():
+          flash('you can only use letters while adding products')
+          return redirect(url_for('show_products'))
+       else:
+           Qr = QueriesMyDb(ProdForRecipe,product_name_entered, ProdForRecipe.product_name)
+           one_record_details = Qr.query_filter_name()
+           if one_record_details:  # if exists, give a message.
+               flash(f'The product {one_record_details.product_name} exists and was not added to the list !!! ')
+               return redirect(url_for('show_products'))
+           else:
+               product_details_entered = ProdForRecipe(product_name_entered, department_id_entered, amount_entered,notes_entered,num_rec_id)
+               db.session.add(product_details_entered)
+               db.session.commit()
+               return redirect(url_for('show_new_recipes'))
+
+    return redirect(url_for('show_new_recipes'))
+
+
+
+@app.route('/add_new_recipe',methods=['POST','GET'])
+def add_new_recipe():
+    dict_recipes = session['dict_recipes']
+    if request.method=='POST':
+        try:
+            new_rec_entered = request.form.get('recipe_name')
+            assert re.match(r'[A-Za-z ]+$', new_rec_entered)!=None
+        except AssertionError:
+            flash(f'The Recipe {new_rec_entered} you entered must be letters only, try again.')
+            return redirect(url_for('show_products'))
+        else:
+            if new_rec_entered in dict_recipes.values():
+               flash(f'The recipe {new_rec_entered} already exists')
+               return redirect(url_for('show_new_recipes'))
+            else:
+                results = [item.recipe_id for item in Recipes.query.order_by(desc(Recipes.recipe_id)).all()]
+                recipe_to_insert = Recipes(new_rec_entered,int(results[0]) + 1)
+                db.session.add(recipe_to_insert)
+                db.session.commit()
+                flash(f'The recipe {new_rec_entered} was added successfully')
+                return redirect(url_for('show_new_recipes'))
+    return redirect(url_for('show_new_recipes'))
+
+
+@app.route('/show_my_recipes',methods=['POST','GET'])
+def show_my_recipes():
+       dict_recipes = {rec.recipe_id: rec.recipe_name for rec in Recipes.query.all()}
+       list_column_names_recipes = session['list_column_names_recipes']
+       return render_template('show_my_recipes.html',dict_recipes=dict_recipes,list_column_names_recipes=list_column_names_recipes)
+
+
+@app.route('/del_rec/<int:recipe_id>', methods=['POST', 'GET'])
+@login_required
+def del_rec(recipe_id):
+    """
+                 Deletes a recipe.
+                  Parameters:
+                  recipe_id(int): The recipe id.
+                  Returns: redirect to the function 'show_new_recipes' that shows all recipes products.
+       """
+    if request.method == 'GET':
+       Qd = QueriesMyDb(ProdForRecipe, recipe_id, ProdForRecipe.recipe_id)
+       one_record_details = Qd.query_filter_name()
+       try:
+           assert one_record_details!=None
+       except:
+           rec_to_del_id = Recipes.query.get(recipe_id)
+           db.session.delete(rec_to_del_id)
+           db.session.commit()
+           return redirect(url_for('show_new_recipes'))
+
+       else:
+          products_under_recipe = ProdForRecipe.query.filter_by(recipe_id = recipe_id).all()
+          for prod_rec in products_under_recipe:
+             db.session.delete(prod_rec)
+          rec_to_del_id = Recipes.query.get(recipe_id)
+          db.session.delete(rec_to_del_id)
+          db.session.commit()
+          return redirect(url_for('show_new_recipes'))
+
+    return redirect(url_for('show_new_recipes'))
+

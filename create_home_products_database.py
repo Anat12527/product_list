@@ -43,6 +43,27 @@ cursor = connection1.cursor()
 #product_query = "INSERT INTO Products (Id_Product, Product_Name, Id_Department,Product_amount,Product_Notes,Date_Buy) VALUES (%s,%s,%s,%s,%s,%s)"
 #cursor.executemany(product_query,products_values)
 
+
+#cursor.execute("CREATE TABLE recipes(Id_Recipe int(11) NOT NULL AUTO_INCREMENT,Recipe_Name VARCHAR(255) NOT NULL, PRIMARY KEY (Id_Recipe))")
+#cursor.execute("CREATE TABLE prodforrecipe(Id_Product int(11) NOT NULL AUTO_INCREMENT,Product_Name VARCHAR(255) NOT NULL,Id_Department int(11) NOT NULL,Product_amount int(11) NOT NULL,Product_Notes VARCHAR(255) NOT NULL,Recipe_Name VARCHAR(255) NOT NULL, PRIMARY KEY (Id_Product ))")
+#Recipes_query = "INSERT INTO Recipes(Id_Recipe,Recipe_Name) VALUES (%s,%s)"
+#recipes_values = [('1','lasagna'),
+#              ('2','schnitzel'),
+#               ('3', 'meatballs')
+ #               ]
+#cursor.executemany(Recipes_query,recipes_values)
+
+#productsfor_recipes_values = [('1','lasagna pasta','5','2','buy two tara','lasagna'),
+              ('2','tomato paste','4','1','package of four','lasagna'),
+               ('3','hard cheese','1','10','1 package of 10','lasagna'),
+                 ('4', 'eggs', '1', '10', '1 package of 10', 'schnitzel'),
+                 ('5', 'chicken breast', '2', '10', '1 package of 10', 'schnitzel')
+               ]
+
+#productforrecipes_query = "INSERT INTO ProdForRecipe (Id_Product, Product_Name, Id_Department_Recipe,Product_amount,Product_Notes,Recipe_Name) VALUES (%s,%s,%s,%s,%s,%s)"
+#cursor.executemany(productforrecipes_query,productsfor_recipes_values)
+
+
 #connection1.commit()
 
 
