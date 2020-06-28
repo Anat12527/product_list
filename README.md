@@ -37,7 +37,7 @@ Backend: Python, Flask, MySQL, SQLAlchemy
 Frontend: JavaScript,  Jinja2, HTML5, CSS, Bootstrap.
 
 ## Future-Features
-* Users can add recipes to the grocery list.
+* Connect the list to the cell phone and enable checkout the groceries.
 * Calculate  the consuming of each product per a day and a week.
 * Calculating the consuming needed for your next groceries shopping.
 * GUI enhancements of the list table and recipe page.
